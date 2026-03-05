@@ -2,7 +2,7 @@
 
 #include <optional>
 
-namespace prism::proc {
+namespace pcr::proc {
 
 // if a field is std::nullopt, the child inherits the parent's current stdio fd
 // if a field has a value, that fd will be dup2()'d onto child stdin/stdout/stderr
@@ -13,4 +13,4 @@ struct ChildStdioMap
     std::optional<int> stderr_fd;
 };
 
-} // namespace prism::proc
+} // namespace pcr::proc

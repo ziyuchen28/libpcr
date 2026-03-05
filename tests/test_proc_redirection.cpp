@@ -1,6 +1,6 @@
-#include "prism/proc/child_proc.h"
-#include "prism/proc/child_stdio.h"
-#include "prism/proc/proc_spec.h"
+#include "pcr/proc/child_proc.h"
+#include "pcr/proc/child_stdio.h"
+#include "pcr/proc/proc_spec.h"
 
 #include <cassert>
 #include <filesystem>
@@ -22,10 +22,10 @@ std::string slurp_file(const std::string& path) {
 }
 
 int main() {
-    using namespace prism::proc;
+    using namespace pcr::proc;
 
-    char in_tmpl[]  = "/tmp/prism-proc-in-XXXXXX";
-    char out_tmpl[] = "/tmp/prism-proc-out-XXXXXX";
+    char in_tmpl[]  = "/tmp/pcr-proc-in-XXXXXX";
+    char out_tmpl[] = "/tmp/pcr-proc-out-XXXXXX";
 
     int in_fd  = ::mkstemp(in_tmpl);
     int out_fd = ::mkstemp(out_tmpl);

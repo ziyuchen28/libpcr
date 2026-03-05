@@ -1,6 +1,6 @@
-#include "prism/proc/child_proc.h"
-#include "prism/proc/child_stdio.h"
-#include "prism/proc/proc_spec.h"
+#include "pcr/proc/child_proc.h"
+#include "pcr/proc/child_stdio.h"
+#include "pcr/proc/proc_spec.h"
 
 #include <cassert>
 #include <iostream>
@@ -10,10 +10,10 @@
 
 int main() 
 {
-    using namespace prism::proc;
+    using namespace pcr::proc;
 
     ProcessSpec spec;
-    spec.exe = "prism-this-command-definitely-does-not-exist";
+    spec.exe = "pcr-this-command-definitely-does-not-exist";
 
     ChildStdioMap stdio;
 

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace prism::proc {
+namespace pcr::proc {
 
 
 struct EnvOverride 
@@ -27,4 +27,4 @@ struct ProcessSpec
     std::optional<std::string> cwd;
 };
 
-} // namespace prism::proc
+} // namespace pcr::proc

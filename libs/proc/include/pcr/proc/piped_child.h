@@ -1,9 +1,9 @@
 #pragma once
 
-#include "prism/proc/child_proc.h"
-#include "prism/proc/proc_spec.h"
+#include "pcr/proc/child_proc.h"
+#include "pcr/proc/proc_spec.h"
 
-namespace prism::proc {
+namespace pcr::proc {
 
 // Convenience wrapper for the common parent<->child stdio-over-pipes case.
 // Parent:
@@ -65,4 +65,4 @@ private:
     int parent_read_stderr_ = -1;
 };
 
-} // namespace prism::proc
+} // namespace pcr::proc

@@ -1,6 +1,6 @@
 
 
-#include "prism/proc/piped_child.h"
+#include "pcr/proc/piped_child.h"
 #include "test_helpers.h"
 
 #include <cassert>
@@ -9,7 +9,7 @@
 
 int main() 
 {
-    using namespace prism::proc;
+    using namespace pcr::proc;
 
     ProcessSpec spec;
     spec.exe = "cat";
@@ -17,7 +17,7 @@ int main()
     auto child = PipedChild::spawn(spec);
 
     const std::string payload =
-        "hello from prism::proc\n"
+        "hello from pcr::proc\n"
         "round-trip via pipes\n";
 
     write_all_fd(child.stdin_write_fd(), payload);

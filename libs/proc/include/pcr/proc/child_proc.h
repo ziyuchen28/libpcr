@@ -1,11 +1,11 @@
 #pragma once
 
-#include "prism/proc/child_stdio.h"
-#include "prism/proc/proc_spec.h"
+#include "pcr/proc/child_stdio.h"
+#include "pcr/proc/proc_spec.h"
 
 #include <sys/types.h>
 
-namespace prism::proc {
+namespace pcr::proc {
 
 struct WaitResult 
 {
@@ -47,4 +47,4 @@ private:
     pid_t pid_ = -1;
 };
 
-} // namespace prism::proc
+} // namespace pcr::proc

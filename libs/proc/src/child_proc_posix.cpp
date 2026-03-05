@@ -1,5 +1,5 @@
-#include "prism/proc/child_proc.h"
-#include "prism/proc/piped_child.h"
+#include "pcr/proc/child_proc.h"
+#include "pcr/proc/piped_child.h"
 
 #include <cerrno>
 #include <csignal>
@@ -14,7 +14,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-namespace prism::proc {
+namespace pcr::proc {
 
 namespace {
 
@@ -442,6 +442,6 @@ void PipedChild::close_fds() noexcept
     close_fd_if_open(parent_read_stderr_);
 }
 
-} // namespace prism::proc
+} // namespace pcr::proc
 
 
