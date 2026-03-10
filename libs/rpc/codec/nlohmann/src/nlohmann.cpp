@@ -11,21 +11,24 @@
 #include <string_view>
 
 namespace pcr::rpc {
-namespace {
 
-constexpr const char* kJsonRpc = "jsonrpc";
-constexpr const char* kJsonRpcVer = "2.0";
+constexpr const char *k_json_rpc = "jsonrpc";
+constexpr const char *k_json_rpc_ver = "2.0";
 
-static void require_jsonrpc_2(const nlohmann::json& j) {
-    if (!j.contains(kJsonRpc) || !j[kJsonRpc].is_string()) {
+
+static void require_jsonrpc_2(const nlohmann::json &j) 
+{
+    if (!j.contains(k_json_rpc) || !j[k_json_rpc].is_string()) {
         throw std::runtime_error("rpc: missing/invalid jsonrpc field");
     }
-    if (j[kJsonRpc].get<std::string>() != kJsonRpcVer) {
+    if (j[k_json_rpc].get<std::string>() != k_json_rpc_ver) {
         throw std::runtime_error("rpc: jsonrpc must be \"2.0\"");
     }
 }
 
-static Id parse_id(const nlohmann::json& v) {
+
+static Id parse_id(const nlohmann::json &v) 
+{
     if (v.is_null()) return Id::null();
 
     if (v.is_number_integer()) {
@@ -47,7 +50,9 @@ static Id parse_id(const nlohmann::json& v) {
     throw std::runtime_error("rpc: invalid id type");
 }
 
-static Error parse_error(const nlohmann::json& e) {
+
+static Error parse_error(const nlohmann::json &e) 
+{
     if (!e.is_object()) throw std::runtime_error("rpc: error must be object");
 
     Error out;
@@ -68,9 +73,9 @@ static Error parse_error(const nlohmann::json& e) {
     return out;
 }
 
-} // namespace
 
-Message NlohmannCodec::decode(std::string&& payload) {
+Message NlohmannCodec::decode(std::string &&payload) 
+{
     nlohmann::json j;
     try {
         j = nlohmann::json::parse(payload.begin(), payload.end());
@@ -133,9 +138,14 @@ Message NlohmannCodec::decode(std::string&& payload) {
     return r;
 }
 
-std::string NlohmannCodec::encode(const Message& msg) {
-    // Important: encoding stays JSON-library-free and consistent across codecs.
+
+std::string NlohmannCodec::encode(const Message &msg) 
+{
+    // note: encoding stays JSON-library-free and consistent across codecs.
     return encode_message_json(msg);
 }
 
 } // namespace pcr::rpc
+
+
+

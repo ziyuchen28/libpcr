@@ -9,7 +9,7 @@
 
 namespace pcr::rpc {
 
-// params/result are stored as raw JSON text (value), so rpc_core stays JSON-library-free.
+// params/result are stored as raw JSON text (value), so rpc_core stays JSON-library-free
 struct Request 
 {
     Id id;
@@ -26,8 +26,11 @@ struct Notification
 struct Response 
 {
     Id id;
-    std::optional<std::string> result_json; // raw JSON value text
-    std::optional<Error> error;             // exactly one of result_json or error should be set
+    // JSON-RPC 2.0 spec - 
+    // A response can be a Success, or it can be a Failure. 
+    // It can never be both, and it can never be neither
+    std::optional<std::string> result_json; 
+    std::optional<Error> error;
 };
 
 using Message = std::variant<Request, Notification, Response>;

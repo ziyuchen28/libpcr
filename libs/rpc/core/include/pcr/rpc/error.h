@@ -5,11 +5,13 @@
 
 namespace pcr::rpc {
 
-struct Error {
+struct Error 
+{
     int code = 0;
     std::string message;
     std::optional<std::string> data_json; // raw JSON value text
 };
+
 
 // Standard JSON-RPC codes
 inline constexpr int kParseError     = -32700;

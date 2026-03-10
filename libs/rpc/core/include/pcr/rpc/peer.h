@@ -9,21 +9,22 @@
 
 namespace pcr::rpc {
 
-class Peer {
+class Peer 
+{
 public:
     Peer(pcr::framing::AnyFramer framer,
          AnyCodec codec,
-         MetricsSink* metrics = nullptr);
+         MetricsSink *metrics = nullptr);
 
     // nullopt => clean EOF
     std::optional<Message> read();
 
-    void write(const Message& msg);
+    void write(const Message &msg);
 
 private:
     pcr::framing::AnyFramer framer_;
     AnyCodec codec_;
-    MetricsSink* metrics_;
+    MetricsSink *metrics_;
 };
 
 } // namespace pcr::rpc

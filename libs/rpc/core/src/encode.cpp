@@ -3,20 +3,25 @@
 #include "pcr/rpc/id.h"
 
 #include <charconv>
-#include <cstdint>
 #include <stdexcept>
 #include <string_view>
 
 namespace pcr::rpc {
+
+    
 namespace {
 
-void append_hex2(std::string& out, unsigned char v) {
-    constexpr char kHex[] = "0123456789abcdef";
-    out.push_back(kHex[(v >> 4) & 0xF]);
-    out.push_back(kHex[(v >> 0) & 0xF]);
+
+void append_hex2(std::string& out, unsigned char v) 
+{
+    constexpr char hex[] = "0123456789abcdef";
+    out.push_back(hex[(v >> 4) & 0xF]);
+    out.push_back(hex[(v >> 0) & 0xF]);
 }
 
-void append_json_string(std::string& out, std::string_view s) {
+
+void append_json_string(std::string &out, std::string_view s) 
+{
     out.push_back('"');
     for (unsigned char c : s) {
         switch (c) {
@@ -28,7 +33,9 @@ void append_json_string(std::string& out, std::string_view s) {
             case '\r': out += "\\r";  break;
             case '\t': out += "\\t";  break;
             default:
+                // 0x00 - 0x1F are control chars
                 if (c < 0x20) {
+                    // unicode prefix
                     out += "\\u00";
                     append_hex2(out, c);
                 } else {
@@ -39,12 +46,15 @@ void append_json_string(std::string& out, std::string_view s) {
     out.push_back('"');
 }
 
-void append_id(std::string& out, const Id& id) {
+
+void append_id(std::string &out, const Id &id) 
+{
     switch (id.kind) {
         case Id::Kind::Null:
             out += "null";
             return;
         case Id::Kind::Int: {
+            // std::to_string is slow
             char buf[32];
             auto [p, ec] = std::to_chars(buf, buf + sizeof(buf), id.i, 10);
             if (ec != std::errc()) throw std::runtime_error("encode_message_json: id to_chars failed");
@@ -57,17 +67,22 @@ void append_id(std::string& out, const Id& id) {
     }
 }
 
-void append_common_prefix(std::string& out) {
+
+void append_common_prefix(std::string &out) 
+{
     out += "{\"jsonrpc\":\"2.0\"";
 }
 
+
 } // namespace
 
-std::string encode_message_json(const Message& msg) {
-    std::string out;
-    out.reserve(256); // will grow if payload is big
 
-    std::visit([&](const auto& m) {
+std::string encode_message_json(const Message &msg) 
+{
+    std::string out;
+    out.reserve(512);
+
+    std::visit([&](const auto &m) {
         using T = std::decay_t<decltype(m)>;
 
         if constexpr (std::is_same_v<T, Request>) {
