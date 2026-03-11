@@ -41,7 +41,7 @@ struct Id
     }
 };
 
-
+// used together with IdHash
 inline bool operator==(const Id &a, const Id &b) noexcept 
 {
     if (a.kind != b.kind) return false;
@@ -53,7 +53,7 @@ inline bool operator==(const Id &a, const Id &b) noexcept
     return false;
 }
 
-
+// used in map
 struct IdHash 
 {
     std::size_t operator()(const Id &id) const noexcept 

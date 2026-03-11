@@ -2,46 +2,54 @@
 
 #include "pcr/rpc/clock.h"
 
-#include <stdexcept>
 #include <utility>
 
 namespace pcr::rpc {
 
+
 Dispatcher::Dispatcher(Peer peer, MetricsSink* metrics)
     : peer_(std::move(peer)),
-      metrics_(metrics) {}
+      metrics_(metrics) 
+{}
 
-Id Dispatcher::send_request(std::string method, std::optional<std::string> params_json) {
+
+Id Dispatcher::send_request(std::string method, std::optional<std::string> params_json) 
+{
     const Id id = Id::from_int(next_id_++);
-
     Request r;
     r.id = id;
     r.method = std::move(method);
     r.params_json = std::move(params_json);
-
     peer_.write(Message{r});
     metric_counter(metrics_, Metric::RequestsSent, 1);
     return id;
 }
 
-void Dispatcher::send_notification(std::string method, std::optional<std::string> params_json) {
+
+void Dispatcher::send_notification(std::string method, std::optional<std::string> params_json) 
+{
     Notification n;
     n.method = std::move(method);
     n.params_json = std::move(params_json);
-
     peer_.write(Message{n});
     metric_counter(metrics_, Metric::NotificationsSent, 1);
 }
 
-void Dispatcher::on_request(std::string method, RequestHandler h) {
+
+void Dispatcher::on_request(std::string method, RequestHandler h) 
+{
     request_handlers_[std::move(method)] = std::move(h);
 }
 
-void Dispatcher::on_notification(std::string method, NotificationHandler h) {
+
+void Dispatcher::on_notification(std::string method, NotificationHandler h) 
+{
     notification_handlers_[std::move(method)] = std::move(h);
 }
 
-bool Dispatcher::pump_once() {
+
+bool Dispatcher::pump_once() 
+{
     const std::uint64_t t0 = now_ns();
 
     auto msg = peer_.read();
@@ -49,7 +57,7 @@ bool Dispatcher::pump_once() {
         return false;
     }
 
-    std::visit([&](auto&& m) {
+    std::visit([&](auto &&m) {
         using T = std::decay_t<decltype(m)>;
         if constexpr (std::is_same_v<T, Request>) {
             metric_counter(metrics_, Metric::RequestsRecv, 1);
@@ -68,7 +76,9 @@ bool Dispatcher::pump_once() {
     return true;
 }
 
-std::optional<Response> Dispatcher::take_response(const Id& id) {
+
+std::optional<Response> Dispatcher::take_response(const Id &id) 
+{
     auto it = responses_.find(id);
     if (it == responses_.end()) return std::nullopt;
     Response out = std::move(it->second);
@@ -76,7 +86,9 @@ std::optional<Response> Dispatcher::take_response(const Id& id) {
     return out;
 }
 
-void Dispatcher::handle_request(const Request& r) {
+
+void Dispatcher::handle_request(const Request &r) 
+{
     auto it = request_handlers_.find(r.method);
     if (it == request_handlers_.end()) {
         Error e;
@@ -113,19 +125,27 @@ void Dispatcher::handle_request(const Request& r) {
     else         send_result(r.id, std::move(*hr.result_json));
 }
 
-void Dispatcher::handle_notification(const Notification& n) {
+
+void Dispatcher::handle_notification(const Notification &n) 
+{
     auto it = notification_handlers_.find(n.method);
     if (it == notification_handlers_.end()) return;
 
-    try { it->second(n); }
+    try { 
+        it->second(n); 
+    }
     catch (...) { /* notifications are fire-and-forget */ }
 }
 
-void Dispatcher::handle_response(Response&& r) {
+
+void Dispatcher::handle_response(Response &&r) 
+{
     responses_[r.id] = std::move(r);
 }
 
-void Dispatcher::send_result(const Id& id, std::string result_json) {
+
+void Dispatcher::send_result(const Id &id, std::string result_json) 
+{
     Response r;
     r.id = id;
     r.result_json = std::move(result_json);
@@ -133,7 +153,9 @@ void Dispatcher::send_result(const Id& id, std::string result_json) {
     metric_counter(metrics_, Metric::ResponsesSent, 1);
 }
 
-void Dispatcher::send_error(const Id& id, Error e) {
+
+void Dispatcher::send_error(const Id &id, Error e) 
+{
     Response r;
     r.id = id;
     r.error = std::move(e);
@@ -142,3 +164,6 @@ void Dispatcher::send_error(const Id& id, Error e) {
 }
 
 } // namespace pcr::rpc
+
+
+

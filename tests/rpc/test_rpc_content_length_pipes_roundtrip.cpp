@@ -15,7 +15,9 @@
 #include <unistd.h>
 
 namespace {
-struct UniqueFd {
+
+struct UniqueFd 
+{
     int fd = -1;
     explicit UniqueFd(int f = -1) : fd(f) {}
     ~UniqueFd() { if (fd >= 0) ::close(fd); }
@@ -30,15 +32,21 @@ struct UniqueFd {
     }
     int release() noexcept { int t = fd; fd = -1; return t; }
 };
-static void make_pipe(UniqueFd& r, UniqueFd& w) {
+
+void make_pipe(UniqueFd &r, UniqueFd &w) 
+{
     int fds[2] = {-1, -1};
     if (::pipe(fds) != 0) throw std::runtime_error("pipe() failed");
     r = UniqueFd(fds[0]);
     w = UniqueFd(fds[1]);
 }
+
 } // namespace
 
-int main() {
+
+
+int main() 
+{
     using namespace pcr;
 
     // Full duplex = two pipes (like parent<->child stdio)
@@ -76,7 +84,7 @@ int main() {
     rpc::Dispatcher sdisp(std::move(server));
 
     // Echo params back as result
-    sdisp.on_request("echo", [](const rpc::Request& req) {
+    sdisp.on_request("echo", [](const rpc::Request &req) {
         return rpc::HandlerResult::ok(req.params_json.value_or("null"));
     });
 
@@ -100,3 +108,6 @@ int main() {
     std::cout << "test_rpc_content_length_pipes_roundtrip: ok\n";
     return 0;
 }
+
+
+

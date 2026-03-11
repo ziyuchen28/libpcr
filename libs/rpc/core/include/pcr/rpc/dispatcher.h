@@ -12,26 +12,33 @@
 #include <string>
 #include <unordered_map>
 
+
 namespace pcr::rpc {
 
-struct HandlerResult {
+
+struct HandlerResult 
+{
     std::optional<std::string> result_json; // raw JSON value
     std::optional<Error> error;
 
-    static HandlerResult ok(std::string result_json_) {
+    static HandlerResult ok(std::string result_json_) 
+    {
         HandlerResult hr;
         hr.result_json = std::move(result_json_);
         return hr;
     }
 
-    static HandlerResult fail(Error e) {
+    static HandlerResult fail(Error e) 
+    {
         HandlerResult hr;
         hr.error = std::move(e);
         return hr;
     }
 };
 
-class Dispatcher {
+
+class Dispatcher 
+{
 public:
     using RequestHandler = std::function<HandlerResult(const Request&)>;
     using NotificationHandler = std::function<void(const Notification&)>;
@@ -54,15 +61,15 @@ public:
     std::optional<Response> take_response(const Id& id);
 
 private:
-    void handle_request(const Request& r);
-    void handle_notification(const Notification& n);
-    void handle_response(Response&& r);
+    void handle_request(const Request &r);
+    void handle_notification(const Notification &n);
+    void handle_response(Response &&r);
 
-    void send_result(const Id& id, std::string result_json);
-    void send_error(const Id& id, Error e);
+    void send_result(const Id &id, std::string result_json);
+    void send_error(const Id &id, Error e);
 
     Peer peer_;
-    MetricsSink* metrics_;
+    MetricsSink *metrics_;
 
     std::int64_t next_id_ = 1;
 
@@ -72,3 +79,6 @@ private:
 };
 
 } // namespace pcr::rpc
+
+
+

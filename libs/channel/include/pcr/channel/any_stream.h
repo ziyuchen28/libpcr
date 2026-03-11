@@ -3,7 +3,6 @@
 #include "pcr/channel/stream.h"
 
 #include <cstddef>
-#include <new>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -105,7 +104,7 @@ private:
         void (*close_write)(void*);
 
         void (*destroy)(AnyStream&) noexcept;
-        void (*move)(AnyStream& dst, AnyStream& src) noexcept;
+        void (*move)(AnyStream &dst, AnyStream &src) noexcept;
     };
 
     template <class M>
@@ -188,7 +187,7 @@ private:
         };
     };
 
-    const VTable* vtbl_ = nullptr;
+    const VTable *vtbl_ = nullptr;
     void* obj_ = nullptr;
     bool heap_ = false;
 
