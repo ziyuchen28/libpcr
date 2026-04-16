@@ -1,6 +1,6 @@
 #include "pcr/channel/pipe_stream.h"
 #include "pcr/channel/stream.h"
-#include "pcr/proc/piped_child.h"
+#include "piped_child.h"
 
 #include <cassert>
 #include <iostream>

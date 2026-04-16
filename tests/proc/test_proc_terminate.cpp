@@ -1,6 +1,6 @@
-#include "pcr/proc/child_proc.h"
-#include "pcr/proc/child_stdio.h"
-#include "pcr/proc/proc_spec.h"
+#include "child_proc.h"
+#include "child_stdio.h"
+#include "proc_spec.h"
 
 #include <cassert>
 #include <chrono>
