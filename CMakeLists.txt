@@ -15,16 +15,14 @@ else()
 endif()
 
 # add_subdirectory(libs/proc)
-add_subdirectory(pcr/proc)
-add_subdirectory(libs/channel)
-add_subdirectory(libs/framing)
-add_subdirectory(libs/rpc)
-
-# Future libs:
-# add_subdirectory(libs/metrics)
 # add_subdirectory(libs/channel)
 # add_subdirectory(libs/framing)
 # add_subdirectory(libs/rpc)
+
+add_subdirectory(pcr/proc)
+add_subdirectory(pcr/stream)
+add_subdirectory(pcr/framing)
+add_subdirectory(libs/rpc)
 
 if(PCR_BUILD_TESTS)
   enable_testing()

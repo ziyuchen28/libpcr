@@ -1,6 +1,6 @@
-#include "pcr/channel/any_stream.h"
-#include "pcr/channel/socket_stream.h"
-#include "pcr/channel/stream.h"
+#include "any_stream.h"
+#include "socket_stream.h"
+#include "stream.h"
 
 #include <cassert>
 #include <iostream>

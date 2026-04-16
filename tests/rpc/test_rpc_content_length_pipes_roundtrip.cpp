@@ -2,11 +2,11 @@
 #include "pcr/rpc/peer.h"
 #include "pcr/rpc/codec/nlohmann.h"
 
-#include "pcr/framing/content_length_framer.h"
-#include "pcr/framing/any_framer.h"
+#include "content_length_framer.h"
+#include "any_framer.h"
 
-#include "pcr/channel/any_stream.h"
-#include "pcr/channel/pipe_stream.h"
+#include "any_stream.h"
+#include "pipe_stream.h"
 
 #include <cassert>
 #include <iostream>

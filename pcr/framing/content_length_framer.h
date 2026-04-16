@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pcr/framing/frame_stats.h"
-#include "pcr/channel/any_stream.h"   
-#include "pcr/channel/stream.h"      
+#include "frame_stats.h"
+#include "any_stream.h"   
+#include "stream.h"      
 
 #include <optional>
 #include <string>

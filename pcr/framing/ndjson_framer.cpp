@@ -1,4 +1,4 @@
-#include "pcr/framing/ndjson_framer.h"
+#include "ndjson_framer.h"
 
 #include <algorithm>
 #include <stdexcept>

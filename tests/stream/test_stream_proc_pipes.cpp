@@ -1,5 +1,5 @@
-#include "pcr/channel/pipe_stream.h"
-#include "pcr/channel/stream.h"
+#include "pipe_stream.h"
+#include "stream.h"
 #include "piped_child.h"
 
 #include <cassert>

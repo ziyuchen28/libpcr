@@ -40,33 +40,33 @@ target_link_libraries(test_proc_spawn_fail PRIVATE pcr::proc)
 target_include_directories(test_proc_spawn_fail PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 add_test(NAME test_proc_spawn_fail COMMAND test_proc_spawn_fail)
 
-add_executable(test_channel_proc_pipes
-    channel/test_channel_proc_pipes.cpp
+add_executable(test_stream_proc_pipes
+    stream/test_stream_proc_pipes.cpp
 )
-target_link_libraries(test_channel_proc_pipes PRIVATE pcr::channel pcr::proc)
-target_include_directories(test_channel_proc_pipes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-add_test(NAME test_channel_proc_pipes COMMAND test_channel_proc_pipes)
+target_link_libraries(test_stream_proc_pipes PRIVATE pcr::stream pcr::proc)
+target_include_directories(test_stream_proc_pipes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME test_stream_proc_pipes COMMAND test_stream_proc_pipes)
 
 #
 #
-add_executable(test_channel_socketpair
-  channel/test_channel_socketpair.cpp
+add_executable(test_stream_socketpair
+  stream/test_stream_socketpair.cpp
 )
-target_link_libraries(test_channel_socketpair PRIVATE pcr::channel)
-target_include_directories(test_channel_socketpair PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-add_test(NAME test_channel_socketpair COMMAND test_channel_socketpair)
+target_link_libraries(test_stream_socketpair PRIVATE pcr::stream)
+target_include_directories(test_stream_socketpair PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME test_stream_socketpair COMMAND test_stream_socketpair)
 
-# add_executable(test_channel_read_exact
-#   test_channel_read_exact.cpp
+# add_executable(test_stream_read_exact
+#   test_stream_read_exact.cpp
 # )
-# target_link_libraries(test_channel_read_exact PRIVATE pcr::channel)
-# add_test(NAME test_channel_read_exact COMMAND test_channel_read_exact)
+# target_link_libraries(test_stream_read_exact PRIVATE pcr::stream)
+# add_test(NAME test_stream_read_exact COMMAND test_stream_read_exact)
 #
-# add_executable(test_channel_invalid_fd
-#   test_channel_invalid_fd.cpp
+# add_executable(test_stream_invalid_fd
+#   test_stream_invalid_fd.cpp
 # )
-# target_link_libraries(test_channel_invalid_fd PRIVATE pcr::channel)
-# add_test(NAME test_channel_invalid_fd COMMAND test_channel_invalid_fd)
+# target_link_libraries(test_stream_invalid_fd PRIVATE pcr::stream)
+# add_test(NAME test_stream_invalid_fd COMMAND test_stream_invalid_fd)
 
 
 # framing tests
