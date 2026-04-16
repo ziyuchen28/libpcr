@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stream.h"
+#include "pcr/stream/stream.h"
 
 #include <cstddef>
 #include <stdexcept>

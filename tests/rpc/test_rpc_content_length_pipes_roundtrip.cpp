@@ -1,12 +1,12 @@
-#include "dispatcher.h"
-#include "peer.h"
-#include "nlohmann.h"
+#include "pcr/rpc/dispatcher.h"
+#include "pcr/rpc/peer.h"
+#include "pcr/rpc/codec/nlohmann.h"
 
-#include "content_length_framer.h"
-#include "any_framer.h"
+#include "pcr/framing/content_length_framer.h"
+#include "pcr/framing/any_framer.h"
 
-#include "any_stream.h"
-#include "pipe_stream.h"
+#include "pcr/stream/any_stream.h"
+#include "pcr/stream/pipe_stream.h"
 
 #include <cassert>
 #include <iostream>

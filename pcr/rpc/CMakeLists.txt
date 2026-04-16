@@ -7,7 +7,7 @@ add_library(pcr_rpc_core
 )
 add_library(pcr::rpc_core ALIAS pcr_rpc_core)
 
-target_include_directories(pcr_rpc_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(pcr_rpc_core PUBLIC ${PCR_ROOT_DIR})
 target_compile_features(pcr_rpc_core PUBLIC cxx_std_20)
 target_compile_options(pcr_rpc_core PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(pcr_rpc_core PUBLIC pcr::framing)
@@ -49,7 +49,7 @@ add_library(pcr_rpc_codec_nlohmann
 )
 add_library(pcr::rpc_codec_nlohmann ALIAS pcr_rpc_codec_nlohmann)
 target_include_directories(pcr_rpc_codec_nlohmann PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/codec
+    ${PCR_ROOT_DIR}
 )
 target_compile_features(pcr_rpc_codec_nlohmann PUBLIC cxx_std_20)
 target_compile_options(pcr_rpc_codec_nlohmann PRIVATE -Wall -Wextra -Wpedantic)

@@ -1,7 +1,7 @@
-#include "content_length_framer.h"
+#include "pcr/framing/content_length_framer.h"
 
-#include "any_stream.h"
-#include "socket_stream.h"
+#include "pcr/stream/any_stream.h"
+#include "pcr/stream/socket_stream.h"
 
 #include <cassert>
 #include <iostream>

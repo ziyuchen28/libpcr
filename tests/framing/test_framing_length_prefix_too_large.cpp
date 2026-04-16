@@ -1,10 +1,8 @@
-#include "length_prefix_framer.h"
+#include "pcr/framing/length_prefix_framer.h"
 
-#include "any_stream.h"
-#include "socket_stream.h"
-#include "stream.h"
+#include "pcr/stream/any_stream.h"
+#include "pcr/stream/socket_stream.h"
 
-#include <array>
 #include <cassert>
 #include <iostream>
 

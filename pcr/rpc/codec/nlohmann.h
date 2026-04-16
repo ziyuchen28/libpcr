@@ -1,6 +1,6 @@
 #pragma once
 
-#include "message.h"
+#include "pcr/rpc/message.h"
 
 #include <nlohmann/json.hpp>
 

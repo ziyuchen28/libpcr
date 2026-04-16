@@ -1,6 +1,5 @@
-#include "ndjson_framer.h"
+#include "pcr/framing/ndjson_framer.h"
 
-#include <algorithm>
 #include <stdexcept>
 
 namespace pcr::framing {

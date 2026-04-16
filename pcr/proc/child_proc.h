@@ -1,7 +1,7 @@
 #pragma once
 
-#include "child_stdio.h"
-#include "proc_spec.h"
+#include "pcr/proc/child_stdio.h"
+#include "pcr/proc/proc_spec.h"
 
 #include <sys/types.h>
 

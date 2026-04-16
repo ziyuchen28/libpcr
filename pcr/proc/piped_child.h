@@ -1,7 +1,7 @@
 #pragma once
 
-#include "child_proc.h"
-#include "proc_spec.h"
+#include "pcr/proc/child_proc.h"
+#include "pcr/proc/proc_spec.h"
 
 namespace pcr::proc {
 

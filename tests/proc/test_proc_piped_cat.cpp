@@ -1,5 +1,5 @@
 
-#include "piped_child.h"
+#include "pcr/proc/piped_child.h"
 #include "test_helpers.h"
 
 #include <cassert>

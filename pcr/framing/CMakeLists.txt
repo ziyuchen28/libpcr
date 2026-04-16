@@ -6,7 +6,7 @@ add_library(pcr_framing
 
 add_library(pcr::framing ALIAS pcr_framing)
 
-target_include_directories(pcr_framing PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(pcr_framing PUBLIC ${PCR_ROOT_DIR})
 
 target_compile_features(pcr_framing PUBLIC cxx_std_20)
 

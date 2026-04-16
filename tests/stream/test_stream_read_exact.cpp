@@ -1,5 +1,5 @@
-#include "socket_stream.h"
-#include "stream.h"
+#include "pcr/stream/socket_stream.h"
+#include "pcr/stream/stream.h"
 
 #include <cassert>
 #include <iostream>
