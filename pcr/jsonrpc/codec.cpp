@@ -1,4 +1,5 @@
-#include "pcr/jsonrpc/encode.h"
+
+#include "pcr/jsonrpc/codec.h"
 
 #include "pcr/jsonrpc/id.h"
 
@@ -10,7 +11,7 @@ namespace pcr::jsonrpc {
     
 namespace {
 
-void append_hex2(std::string& out, unsigned char v) 
+void append_hex2(std::string &out, unsigned char v) 
 {
     constexpr char hex[] = "0123456789abcdef";
     out.push_back(hex[(v >> 4) & 0xF]);
@@ -75,7 +76,7 @@ void append_common_prefix(std::string &out)
 } // namespace
 
 
-std::string encode_message_json(const Message &msg) 
+std::string encode(const Message &msg) 
 {
     std::string out;
     out.reserve(512);

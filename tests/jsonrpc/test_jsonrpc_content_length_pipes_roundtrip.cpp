@@ -1,6 +1,5 @@
 #include "pcr/jsonrpc/dispatcher.h"
 #include "pcr/jsonrpc/peer.h"
-#include "pcr/jsonrpc/codec/nlohmann.h"
 
 #include "pcr/framing/content_length_framer.h"
 #include "pcr/framing/any_framer.h"
@@ -69,15 +68,12 @@ int main()
         channel::FdOwnership::Owned
     )};
 
-    // Build peers
     jsonrpc::Peer client(
-        framing::AnyFramer{framing::ContentLengthFramer(A)},
-        jsonrpc::AnyCodec{jsonrpc::NlohmannCodec{}}
+        framing::AnyFramer{framing::ContentLengthFramer(A)}
     );
 
     jsonrpc::Peer server(
-        framing::AnyFramer{framing::ContentLengthFramer(B)},
-        jsonrpc::AnyCodec{jsonrpc::NlohmannCodec{}}
+        framing::AnyFramer{framing::ContentLengthFramer(B)}
     );
 
     jsonrpc::Dispatcher cdisp(std::move(client));
@@ -88,8 +84,7 @@ int main()
         return jsonrpc::HandlerResult::ok(req.params_json.value_or("null"));
     });
 
-    // Create params JSON string using nlohmann helper
-    const std::string params = jsonrpc::json_dump(nlohmann::json{{"msg","hi"},{"n",7}});
+    const std::string params = R"({"msg":"hi","n":7})";
 
     const jsonrpc::Id id = cdisp.send_request("echo", params);
 

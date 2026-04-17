@@ -94,6 +94,6 @@ add_test(NAME test_framing_content_length_pipes_two_frames COMMAND test_framing_
 add_executable(test_jsonrpc_content_length_pipes_roundtrip    
     jsonrpc/test_jsonrpc_content_length_pipes_roundtrip.cpp
 )
-target_link_libraries(test_jsonrpc_content_length_pipes_roundtrip PRIVATE pcr::jsonrpc_nlohmann)
+target_link_libraries(test_jsonrpc_content_length_pipes_roundtrip PRIVATE pcr::jsonrpc)
 add_test(NAME test_jsonrpc_content_length_pipes_roundtrip COMMAND test_jsonrpc_content_length_pipes_roundtrip)
 

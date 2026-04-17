@@ -1,7 +1,6 @@
 #pragma once
 
 #include "pcr/framing/any_framer.h"
-#include "pcr/jsonrpc/any_codec.h"
 #include "pcr/jsonrpc/metrics.h"
 #include "pcr/jsonrpc/message.h"
 
@@ -13,7 +12,6 @@ class Peer
 {
 public:
     Peer(pcr::framing::AnyFramer framer,
-         AnyCodec codec,
          MetricsSink *metrics = nullptr);
 
     // nullopt => clean EOF
@@ -23,7 +21,6 @@ public:
 
 private:
     pcr::framing::AnyFramer framer_;
-    AnyCodec codec_;
     MetricsSink *metrics_;
 };
 

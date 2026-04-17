@@ -1,18 +1,18 @@
 #pragma once
 
-#include "pcr/jsonrpc/message.h"
-
-#include <concepts>
 #include <string>
+#include "pcr/jsonrpc/message.h"
 
 namespace pcr::jsonrpc {
 
-// Decode consumes the frame payload buffer (std::string&&) so future simdjson
-// can reserve/pad in-place without extra copies.
-template <class C>
-concept Codec = requires(C& c, std::string&& payload, const Message& msg) {
-    { c.decode(std::move(payload)) } -> std::same_as<Message>;
-    { c.encode(msg) } -> std::same_as<std::string>;
-};
+//
+// decode_message:
+//   one complete framed payload -> JSON-RPC message
+//
+// encode_message:
+//   JSON-RPC message -> one complete payload
+//
+Message decode(std::string &&payload);
+std::string encode(const Message &msg);
 
 } // namespace pcr::jsonrpc

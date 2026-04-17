@@ -1,14 +1,15 @@
 #include "pcr/jsonrpc/peer.h"
 #include "pcr/jsonrpc/clock.h"
 
+#include "pcr/jsonrpc/codec.h"
+
 #include <utility>
 
 namespace pcr::jsonrpc {
 
 
-Peer::Peer(pcr::framing::AnyFramer framer, AnyCodec codec, MetricsSink *metrics)
+Peer::Peer(pcr::framing::AnyFramer framer, MetricsSink *metrics)
     : framer_(std::move(framer)),
-      codec_(std::move(codec)),
       metrics_(metrics) {}
 
 
@@ -23,7 +24,7 @@ std::optional<Message> Peer::read()
     metric_counter(metrics_, Metric::BytesIn, frame->size());
 
     const std::uint64_t t0 = now_ns();
-    Message msg = codec_.decode(std::move(*frame));
+    Message msg = decode(std::move(*frame));
     const std::uint64_t t1 = now_ns();
 
     metric_timing(metrics_, Metric::DecodeNs, t1 - t0);
@@ -34,7 +35,7 @@ std::optional<Message> Peer::read()
 void Peer::write(const Message &msg) 
 {
     const std::uint64_t t0 = now_ns();
-    std::string payload = codec_.encode(msg);
+    std::string payload = encode(msg);
     const std::uint64_t t1 = now_ns();
 
     metric_timing(metrics_, Metric::EncodeNs, t1 - t0);

@@ -1,18 +1,4 @@
 
-# core
-add_library(pcr_jsonrpc_core
-  encode.cpp
-  peer.cpp
-  dispatcher.cpp
-)
-add_library(pcr::jsonrpc_core ALIAS pcr_jsonrpc_core)
-
-target_include_directories(pcr_jsonrpc_core PUBLIC ${PCR_ROOT_DIR})
-target_compile_features(pcr_jsonrpc_core PUBLIC cxx_std_20)
-target_compile_options(pcr_jsonrpc_core PRIVATE -Wall -Wextra -Wpedantic)
-target_link_libraries(pcr_jsonrpc_core PUBLIC pcr::framing)
-
-
 # nlohmann 
 # Try to locate nlohmann target in three ways:
 # 1) parent/toolchain already provided nlohmann_json::nlohmann_json
@@ -42,28 +28,22 @@ else()
 endif()
 
 
-# nlohmann backed codec 
 
-add_library(pcr_jsonrpc_codec_nlohmann
-    codec/nlohmann.cpp
+# jsonrpc
+add_library(pcr_jsonrpc
+  codec.cpp
+  codec_nlohmann.cpp
+  peer.cpp
+  dispatcher.cpp
 )
-add_library(pcr::jsonrpc_codec_nlohmann ALIAS pcr_jsonrpc_codec_nlohmann)
-target_include_directories(pcr_jsonrpc_codec_nlohmann PUBLIC
-    ${PCR_ROOT_DIR}
-)
-target_compile_features(pcr_jsonrpc_codec_nlohmann PUBLIC cxx_std_20)
-target_compile_options(pcr_jsonrpc_codec_nlohmann PRIVATE -Wall -Wextra -Wpedantic)
+add_library(pcr::jsonrpc ALIAS pcr_jsonrpc)
 
-target_link_libraries(pcr_jsonrpc_codec_nlohmann
-    PUBLIC
-        pcr::jsonrpc_core
-        nlohmann_json::nlohmann_json
+target_include_directories(pcr_jsonrpc PUBLIC ${PCR_ROOT_DIR})
+target_compile_features(pcr_jsonrpc PUBLIC cxx_std_20)
+target_compile_options(pcr_jsonrpc PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(pcr_jsonrpc 
+    PUBLIC pcr::framing
+    PRIVATE nlohmann_json::nlohmann_json
 )
 
-# wrapper interface
-add_library(pcr_jsonrpc_nlohmann INTERFACE)
-add_library(pcr::jsonrpc_nlohmann ALIAS pcr_jsonrpc_nlohmann)
-target_link_libraries(pcr_jsonrpc_nlohmann INTERFACE
-    pcr::jsonrpc_core
-    pcr::jsonrpc_codec_nlohmann
-)
+
