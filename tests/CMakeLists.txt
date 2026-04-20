@@ -128,5 +128,42 @@ add_test(NAME test_stdio_jsonrpc_session
 
 
 
+add_executable(pcr_test_stdio_jsonrpc_stderr_flood_server
+    ipc/test_stdio_jsonrpc_stderr_flood_server.cpp
+)
+
+target_link_libraries(pcr_test_stdio_jsonrpc_stderr_flood_server
+    PRIVATE
+        pcr::jsonrpc
+        pcr::framing
+        pcr::stream
+)
+
+add_executable(test_stdio_jsonrpc_inherit_stderr
+    ipc/test_stdio_jsonrpc_inherit_stderr.cpp
+)
+
+target_link_libraries(test_stdio_jsonrpc_inherit_stderr
+    PRIVATE
+        pcr::ipc_stdio_jsonrpc
+)
+
+target_compile_definitions(test_stdio_jsonrpc_inherit_stderr
+    PRIVATE
+        PCR_TEST_STDERR_FLOOD_SERVER="$<TARGET_FILE:pcr_test_stdio_jsonrpc_stderr_flood_server>"
+)
+
+add_test(
+    NAME test_stdio_jsonrpc_inherit_stderr
+    COMMAND test_stdio_jsonrpc_inherit_stderr
+)
+
+set_tests_properties(test_stdio_jsonrpc_inherit_stderr
+    PROPERTIES TIMEOUT 10
+)
+
+
+
+
 
 

@@ -52,13 +52,10 @@ struct StdioJsonRpcSession::Impl
 };
 
 StdioJsonRpcSession::StdioJsonRpcSession(std::unique_ptr<Impl> impl) noexcept
-    : impl_(std::move(impl))
-{
-}
+    : impl_(std::move(impl)) {}
 StdioJsonRpcSession::StdioJsonRpcSession(StdioJsonRpcSession&&) noexcept = default;
 StdioJsonRpcSession &StdioJsonRpcSession::operator=(StdioJsonRpcSession&&) noexcept = default;
 StdioJsonRpcSession::~StdioJsonRpcSession() = default;
-
 
 
 std::string StdioJsonRpcSession::request(
@@ -139,7 +136,7 @@ StdioJsonRpcSession StdioJsonRpcSession::spawn(const StdioJsonRpcLaunchConfig &c
 {
     return StdioJsonRpcSession(
         std::make_unique<StdioJsonRpcSession::Impl>(
-            pcr::proc::PipedChild::spawn(to_process_spec(config))
+            pcr::proc::PipedChild::spawn_inherit_stderr(to_process_spec(config))
         )
     );
 }

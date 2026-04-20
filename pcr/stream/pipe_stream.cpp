@@ -205,18 +205,17 @@ void PipeWriter::do_close() noexcept
 //
 // duplex
 //
-PipeDuplex::PipeDuplex(int read_fd,
-                       int write_fd,
-                       FdOwnership read_ownership,
-                       FdOwnership write_ownership)
+PipeDuplex::PipeDuplex(
+    int read_fd,
+    int write_fd,
+    FdOwnership read_ownership,
+    FdOwnership write_ownership)
     : reader_(read_fd, read_ownership),
-      writer_(write_fd, write_ownership) 
-{}
+      writer_(write_fd, write_ownership) {}
 
 PipeDuplex::PipeDuplex(PipeReader reader, PipeWriter writer) noexcept
     : reader_(std::move(reader)),
-      writer_(std::move(writer))
-{}
+      writer_(std::move(writer)) {}
 
 std::size_t PipeDuplex::read_some(void *dst, std::size_t max_bytes) 
 {

@@ -74,7 +74,7 @@ public:
     PipeDuplex& operator=(const PipeDuplex&) = delete;
 
     PipeDuplex(PipeDuplex&&) noexcept = default;
-    PipeDuplex& operator=(PipeDuplex&&) noexcept = default;
+    PipeDuplex &operator=(PipeDuplex&&) noexcept = default;
 
     std::size_t read_some(void* dst, std::size_t max_bytes);
     std::size_t write_some(const void* src, std::size_t max_bytes);

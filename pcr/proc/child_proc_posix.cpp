@@ -61,13 +61,11 @@ PipePair make_pipe()
     return PipePair{fds[0], fds[1]};
 }
 
-
 void close_pipe(PipePair &p) noexcept 
 {
     close_fd_if_open(p.read_end);
     close_fd_if_open(p.write_end);
 }
-
 
 std::vector<char*> build_argv(const ProcessSpec &spec) 
 {
@@ -96,7 +94,6 @@ void apply_child_setup(const ProcessSpec &spec)
         }
     }
 }
-
 
 void write_errno_and_exit(int err_pipe_fd, int err) noexcept 
 {
@@ -143,6 +140,7 @@ void remap_child_stdio(const ChildStdioMap &stdio, int err_pipe_fd) noexcept
         }
     };
 
+    // other fds are closed through FD_CLOEXEC 
     maybe_track(stdio.stdin_fd);
     maybe_track(stdio.stdout_fd);
     maybe_track(stdio.stderr_fd);
@@ -374,10 +372,11 @@ PipedChild &PipedChild::operator=(PipedChild &&other) noexcept
 }
 
 // sink func - takes ownershipt of ChildProcess hence two moves
-PipedChild PipedChild::from_raw(ChildProcess proc, 
-                                int parent_write_stdin, 
-                                int parent_read_stdout, 
-                                int parent_read_stderr) noexcept 
+PipedChild PipedChild::from_raw(
+    ChildProcess proc, 
+    int parent_write_stdin, 
+    int parent_read_stdout, 
+    int parent_read_stderr) noexcept 
 {
     PipedChild out;
     out.process_ = std::move(proc);
@@ -390,7 +389,7 @@ PipedChild PipedChild::from_raw(ChildProcess proc,
 
 PipedChild PipedChild::spawn(const ProcessSpec &spec) 
 {
-    // child listens on it's stdin
+    // child reads from it's stdin
     PipePair stdin_pipe = make_pipe();
     // child writes to it's stdout
     PipePair stdout_pipe = make_pipe();
@@ -422,6 +421,41 @@ PipedChild PipedChild::spawn(const ProcessSpec &spec)
         close_pipe(stdin_pipe);
         close_pipe(stdout_pipe);
         close_pipe(stderr_pipe);
+        throw;
+    }
+}
+
+
+PipedChild PipedChild::spawn_inherit_stderr(const ProcessSpec &spec)
+{
+    // child reads from stdin pipe
+    PipePair stdin_pipe = make_pipe();
+    // child writes protocol output to stdout pipe
+    PipePair stdout_pipe = make_pipe();
+
+    try {
+        ChildStdioMap stdio;
+        stdio.stdin_fd  = stdin_pipe.read_end;
+        stdio.stdout_fd = stdout_pipe.write_end;
+
+        // The child inherits parent's STDERR_FILENO.
+        ChildProcess child = ChildProcess::spawn(spec, stdio);
+
+        // Parent keeps:
+        //   stdin write end
+        //   stdout read end
+        close_fd_if_open(stdin_pipe.read_end);
+        close_fd_if_open(stdout_pipe.write_end);
+
+        return from_raw(
+            std::move(child),
+            stdin_pipe.write_end,
+            stdout_pipe.read_end,
+            -1
+        );
+    } catch (...) {
+        close_pipe(stdin_pipe);
+        close_pipe(stdout_pipe);
         throw;
     }
 }

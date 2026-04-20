@@ -26,6 +26,7 @@ public:
     PipedChild &operator=(PipedChild &&other) noexcept;
 
     static PipedChild spawn(const ProcessSpec &spec);
+    static PipedChild spawn_inherit_stderr(const ProcessSpec &spec);
 
     ChildProcess &process() noexcept { 
         return process_; 
@@ -52,10 +53,11 @@ public:
 
 
 private:
-    static PipedChild from_raw(ChildProcess proc, 
-                              int parent_write_stdin, 
-                              int parent_read_stdout, 
-                              int parent_read_stderr) noexcept;
+    static PipedChild from_raw(
+        ChildProcess proc, 
+        int parent_write_stdin, 
+        int parent_read_stdout, 
+        int parent_read_stderr) noexcept;
 
     void close_fds() noexcept;
 
