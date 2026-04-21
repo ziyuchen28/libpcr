@@ -9,6 +9,10 @@
 #include <string_view>
 #include <vector>
 
+#include <chrono>
+#include <optional>
+#include <thread>
+
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -23,6 +27,21 @@ namespace {
 {
     throw std::runtime_error(std::string(prefix) + ": " + std::strerror(errno));
 }
+
+
+WaitResult decode_wait_status(int status)
+{
+    WaitResult out;
+    if (WIFEXITED(status)) {
+        out.exited = true;
+        out.exit_code = WEXITSTATUS(status);
+    } else if (WIFSIGNALED(status)) {
+        out.signaled = true;
+        out.term_signal = WTERMSIG(status);
+    }
+    return out;
+}
+
 
 void close_fd_if_open(int &fd) noexcept 
 {
@@ -307,18 +326,51 @@ WaitResult ChildProcess::wait()
         throw_errno("waitpid failed");
     }
 
-    WaitResult out;
-    if (WIFEXITED(status)) {
-        out.exited = true;
-        out.exit_code = WEXITSTATUS(status);
-    } else if (WIFSIGNALED(status)) {
-        out.signaled = true;
-        out.term_signal = WTERMSIG(status);
-    }
+    // WaitResult out;
+    // if (WIFEXITED(status)) {
+    //     out.exited = true;
+    //     out.exit_code = WEXITSTATUS(status);
+    // } else if (WIFSIGNALED(status)) {
+    //     out.signaled = true;
+    //     out.term_signal = WTERMSIG(status);
+    // }
 
     pid_ = -1;
-    return out;
+    return decode_wait_status(status);
 }
+
+
+std::optional<WaitResult> ChildProcess::wait_for(std::chrono::milliseconds timeout)
+{
+    if (pid_ <= 0) {
+        return WaitResult{};
+    }
+
+    const auto deadline = std::chrono::steady_clock::now() + timeout;
+
+    for (;;) {
+        int status = 0;
+        const pid_t rc = ::waitpid(pid_, &status, WNOHANG);
+
+        if (rc == pid_) {
+            pid_ = -1;
+            return decode_wait_status(status);
+        }
+        if (rc == 0) {
+            if (std::chrono::steady_clock::now() >= deadline) {
+                return std::nullopt;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            continue;
+        }
+        if (errno == EINTR) {
+            continue;
+        }
+
+        throw_errno("waitpid(WNOHANG) failed");
+    }
+}
+
 
 void ChildProcess::reap_if_dead() noexcept 
 {
@@ -478,6 +530,18 @@ void PipedChild::close_fds() noexcept
     close_fd_if_open(parent_read_stdout_);
     close_fd_if_open(parent_read_stderr_);
 }
+
+std::optional<WaitResult> PipedChild::wait_for(std::chrono::milliseconds timeout)
+{
+    return process_.wait_for(timeout);
+}
+
+
+void PipedChild::terminate(int signal_number)
+{
+    process_.terminate(signal_number);
+}
+
 
 } // namespace pcr::proc
 

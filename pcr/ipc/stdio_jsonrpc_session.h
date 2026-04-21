@@ -3,6 +3,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <chrono>
 
 #include "pcr/jsonrpc/dispatcher.h"
 
@@ -45,6 +46,8 @@ public:
     // session lifecycle
     void close();
     void wait();
+    bool wait_for(std::chrono::milliseconds timeout);
+    void terminate();
 
 private:
     struct Impl;

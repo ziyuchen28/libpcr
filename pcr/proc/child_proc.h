@@ -5,7 +5,11 @@
 
 #include <sys/types.h>
 
+#include <chrono>
+#include <optional>
+
 namespace pcr::proc {
+
 
 struct WaitResult 
 {
@@ -15,6 +19,7 @@ struct WaitResult
     bool signaled = false;
     int term_signal = 0;
 };
+
 
 class ChildProcess 
 {
@@ -39,6 +44,7 @@ public:
     void terminate(int signal_number = 15); // SIGTERM
     // to do void term_graceful(std::chrono::milliseconds timeout); // SIGTERM -> wait -> SIGKILL
     WaitResult wait();
+    std::optional<WaitResult> wait_for(std::chrono::milliseconds timeout);
 
 private:
     static ChildProcess from_pid(pid_t pid) noexcept;
@@ -48,3 +54,6 @@ private:
 };
 
 } // namespace pcr::proc
+
+
+

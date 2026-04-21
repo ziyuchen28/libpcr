@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <utility>
+#include <csignal>
 
 #include "pcr/proc/piped_child.h"
 #include "pcr/proc/proc_spec.h"
@@ -129,6 +130,16 @@ void StdioJsonRpcSession::close()
 void StdioJsonRpcSession::wait()
 {
     (void)impl_->child.wait();
+}
+
+bool StdioJsonRpcSession::wait_for(std::chrono::milliseconds timeout)
+{
+    return impl_->child.wait_for(timeout).has_value();
+}
+
+void StdioJsonRpcSession::terminate()
+{
+    impl_->child.terminate(SIGTERM);
 }
 
 

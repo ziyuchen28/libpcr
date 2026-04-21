@@ -51,6 +51,8 @@ public:
     void close_stdin_write();
     WaitResult wait();
 
+    std::optional<WaitResult> wait_for(std::chrono::milliseconds timeout);
+    void terminate(int signal_number);
 
 private:
     static PipedChild from_raw(
