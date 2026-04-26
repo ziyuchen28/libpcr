@@ -3,7 +3,7 @@ if(WIN32)
 
     # WIN
     add_executable(test_proc_piped_win
-        proc/test_proc_piped_win.cpp
+        tests/test_proc_piped_win.cpp
     )
     target_link_libraries(test_proc_piped_win PRIVATE pcr::proc)
     target_include_directories(test_proc_piped_win PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
