@@ -1,9 +1,8 @@
 
-
 if(WIN32)
 
     # WIN
-    add_executable(test_proc_piped_wiun
+    add_executable(test_proc_piped_win
         proc/test_proc_piped_win.cpp
     )
     target_link_libraries(test_proc_piped_win PRIVATE pcr::proc)
