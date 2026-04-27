@@ -10,6 +10,9 @@ else()
     socket_stream_posix.cpp
   )
 endif()
+
+
+add_library(pcr_stream ${PCR_STREAM_SOURCES})
 add_library(pcr::stream ALIAS pcr_stream)
 
 target_include_directories(pcr_stream PUBLIC ${PCR_ROOT_DIR})
