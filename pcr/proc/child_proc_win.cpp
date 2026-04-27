@@ -9,6 +9,7 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 #include <fcntl.h>
 #include <io.h>
@@ -19,6 +20,16 @@ namespace pcr::proc {
 
 
 namespace {
+
+
+void trace_proc_win(std::string_view msg)
+{
+(void) msg;
+#if 0
+    std::cerr << "[pcr::proc::win] " << msg << "\n";
+    std::cerr.flush();
+#endif
+}
 
 
 [[noreturn]] void throw_win32(std::string_view prefix)
@@ -35,14 +46,45 @@ void close_handle_if_open(HANDLE &h) noexcept
     }
 }
 
-std::wstring utf8_to_utf16(std::string_view s)
+
+std::string wide_to_utf8(std::wstring_view ws)
+{
+    if (ws.empty()) {
+        return {};
+    }
+
+    const int n = ::WideCharToMultiByte(
+        CP_UTF8, 0,
+        ws.data(), static_cast<int>(ws.size()),
+        nullptr, 0,
+        nullptr, nullptr);
+
+    if (n <= 0) {
+        return "<wide-to-utf8-failed>";
+    }
+
+    std::string out(static_cast<std::size_t>(n), '\0');
+    const int rc = ::WideCharToMultiByte(
+        CP_UTF8, 0,
+        ws.data(), static_cast<int>(ws.size()),
+        out.data(), n,
+        nullptr, nullptr);
+
+    if (rc != n) {
+        return "<wide-to-utf8-failed>";
+    }
+
+    return out;
+}
+
+std::wstring utf8_to_wide(std::string_view s)
 {
     if (s.empty()) {
         return {};
     }
 
-    const int n = ::multibytetowidechar(
-        cp_utf8,
+    const int n = ::MultiByteToWideChar(
+        CP_UTF8,
         MB_ERR_INVALID_CHARS,
         s.data(),
         static_cast<int>(s.size()),
@@ -76,7 +118,11 @@ std::wstring quote_windows_arg(std::wstring_view arg)
 
     bool needs_quotes = false;
     for (wchar_t ch : arg) {
-        if (ch == L' ' || ch == L'\t' || ch == L'"') {
+        // spaces, quotes
+        // shell operator such as ^, etc
+        if (ch == L' ' || ch == L'\t' || ch == L'"' || 
+            ch == L'^' || ch == L'&' || ch == L'|' || 
+            ch == L'<' || ch == L'>' || ch == L'(' || ch == L')') {
             needs_quotes = true;
             break;
         }
@@ -122,13 +168,14 @@ std::wstring quote_windows_arg(std::wstring_view arg)
 
 std::wstring build_command_line(const ProcessSpec &spec)
 {
-    std::wstring cmd = quote_windows_arg(utf8_to_utf16(spec.exe));
+
+    std::wstring cmd = quote_windows_arg(utf8_to_wide(spec.exe));
 
     for (const auto& arg : spec.args) {
         cmd.push_back(L' ');
-        cmd += quote_windows_arg(utf8_to_utf16(arg));
+        std::wstring tmp = quote_windows_arg(utf8_to_wide(arg)); 
+        cmd += quote_windows_arg(utf8_to_wide(arg));
     }
-
     return cmd;
 }
 
@@ -152,7 +199,9 @@ HANDLE handle_from_fd(int fd)
     return reinterpret_cast<HANDLE>(raw);
 }
 
-struct PipePair {
+
+struct PipePair 
+{
     HANDLE read_end  = INVALID_HANDLE_VALUE;
     HANDLE write_end = INVALID_HANDLE_VALUE;
 };
@@ -172,11 +221,13 @@ PipePair make_pipe()
     return p;
 }
 
+
 void close_pipe(PipePair &p) noexcept
 {
     close_handle_if_open(p.read_end);
     close_handle_if_open(p.write_end);
 }
+
 
 void make_non_inheritable(HANDLE h)
 {
@@ -185,24 +236,77 @@ void make_non_inheritable(HANDLE h)
     }
 }
 
-ChildProcess from_process_info(PROCESS_INFORMATION pi) noexcept
-{
-    ChildProcess out;
-    out.process_handle_ = pi.hProcess;
-    out.pid_ = pi.dwProcessId;
 
-    if (pi.hThread) {
-        ::CloseHandle(pi.hThread);
-    }
+WaitResult decode_exit_code(DWORD code)
+{
+    WaitResult out;
+    out.exited = true;
+    out.exit_code = static_cast<int>(code);
     return out;
 }
 
 
-ChildProcess spawn_with_handles(
+} // namespace
+
+
+ChildProcess::~ChildProcess()
+{
+    reap_if_dead();
+    if (process_handle_) {
+        ::CloseHandle(reinterpret_cast<HANDLE>(process_handle_));
+        process_handle_ = nullptr;
+    }
+}
+
+
+ChildProcess::ChildProcess(ChildProcess &&other) noexcept
+    : pid_(other.pid_),
+      process_handle_(other.process_handle_)
+      
+{
+    other.process_handle_ = nullptr;
+    other.pid_ = 0;
+}
+
+
+ChildProcess &ChildProcess::operator=(ChildProcess &&other) noexcept
+{
+    if (this == &other) return *this;
+
+    if (process_handle_) {
+        ::CloseHandle(reinterpret_cast<HANDLE>(process_handle_));
+    }
+
+    process_handle_ = other.process_handle_;
+    pid_ = other.pid_;
+    other.process_handle_ = nullptr;
+    other.pid_ = 0;
+    return *this;
+}
+
+
+// ChildProcess from_process_info(PROCESS_INFORMATION pi) noexcept
+// {
+//     ChildProcess out;
+//     out.process_handle_ = pi.hProcess;
+//     out.pid_ = pi.dwProcessId;
+//     // ChildProcess out = ChildProcess::from_handle(pi.hProcess, pi.dwProcessId);
+//     if (pi.hThread) {
+//         ::CloseHandle(pi.hThread);
+//     }
+//     return out;
+// }
+//
+
+
+#define TO_NATIVE(h) reinterpret_cast<pcr::proc::NativeHandle>(h)
+#define FROM_NATIVE(h) reinterpret_cast<HANDLE>(h)
+
+ChildProcess ChildProcess::spawn_with_handles(
     const ProcessSpec &spec,
-    HANDLE stdin_h,
-    HANDLE stdout_h,
-    HANDLE stderr_h)
+    NativeHandle stdin_h,
+    NativeHandle stdout_h,
+    NativeHandle stderr_h)
 {
     if (spec.exe.empty()) {
         throw std::invalid_argument("ProcessSpec.exe must not be empty");
@@ -211,11 +315,9 @@ ChildProcess spawn_with_handles(
     STARTUPINFOW si{};
     si.cb = sizeof(si);
     si.dwFlags |= STARTF_USESTDHANDLES;
-    si.hStdInput = stdin_h;
-    si.hStdOutput = stdout_h;
-    si.hStdError = stderr_h;
-
-    PROCESS_INFORMATION pi{};
+    si.hStdInput = FROM_NATIVE(stdin_h);
+    si.hStdOutput = FROM_NATIVE(stdout_h);
+    si.hStdError = FROM_NATIVE(stderr_h);
 
     std::wstring original_cmd = build_command_line(spec);
 
@@ -226,13 +328,25 @@ ChildProcess spawn_with_handles(
     std::wstring cwd;
     LPWSTR cwd_ptr = nullptr;
     if (spec.cwd.has_value()) {
-        cwd = utf8_to_utf16(*spec.cwd);
+        cwd = utf8_to_wide(*spec.cwd);
         cwd_ptr = cwd.data();
     }
 
     std::vector<wchar_t> cmd_buf(cmd.begin(), cmd.end());
     cmd_buf.push_back(L'\0');
 
+    trace_proc_win("spawn_with_handles begin");
+    trace_proc_win("spec.exe=" + spec.exe);
+
+    for (std::size_t i = 0; i < spec.args.size(); ++i) {
+        trace_proc_win("arg[" + std::to_string(i) + "]=" + spec.args[i]);
+    }
+
+    trace_proc_win("original_cmd=" + wide_to_utf8(original_cmd));
+    trace_proc_win("wrapped_cmd=" + wide_to_utf8(cmd));
+
+
+    PROCESS_INFORMATION pi{};
     if (!::CreateProcessW(
         nullptr,
         cmd_buf.data(),
@@ -248,68 +362,35 @@ ChildProcess spawn_with_handles(
         throw_win32("CreateProcessW failed");
     }
 
-    return from_process_info(pi);
-}
-
-
-WaitResult decode_exit_code(DWORD code)
-{
-    WaitResult out;
-    out.exited = true;
-    out.exit_code = static_cast<int>(code);
+    //return from_process_info(pi);
+    ChildProcess out;
+    out.process_handle_ = pi.hProcess;
+    out.pid_ = pi.dwProcessId;
+    // ChildProcess out = ChildProcess::from_handle(pi.hProcess, pi.dwProcessId);
+    if (pi.hThread) {
+        ::CloseHandle(pi.hThread);
+    }
     return out;
 }
 
 
-} // namespace
-
-ChildProcess::~ChildProcess()
+ChildProcess ChildProcess::spawn(const ProcessSpec &spec, const ChildStdioMap &stdio)
 {
-    reap_if_dead();
-    if (process_handle_) {
-        ::CloseHandle(reinterpret_cast<HANDLE>(process_handle_));
-        process_handle_ = nullptr;
-    }
-}
+    HANDLE stdin_h = stdio.stdin_fd.has_value() 
+        ? handle_from_fd(*stdio.stdin_fd)
+        : ::GetStdHandle(STD_INPUT_HANDLE);
+    HANDLE stdout_h = stdio.stdout_fd.has_value() 
+        ? handle_from_fd(*stdio.stdout_fd)
+        : ::GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE stderr_h = stdio.stderr_fd.has_value() 
+        ? handle_from_fd(*stdio.stderr_fd)
+        : ::GetStdHandle(STD_ERROR_HANDLE);
 
-ChildProcess::ChildProcess(ChildProcess&& other) noexcept
-    : process_handle_(other.process_handle_),
-      pid_(other.pid_)
-{
-    other.process_handle_ = nullptr;
-    other.pid_ = 0;
-}
-
-ChildProcess& ChildProcess::operator=(ChildProcess&& other) noexcept
-{
-    if (this == &other) return *this;
-
-    if (process_handle_) {
-        ::CloseHandle(reinterpret_cast<HANDLE>(process_handle_));
-    }
-
-    process_handle_ = other.process_handle_;
-    pid_ = other.pid_;
-    other.process_handle_ = nullptr;
-    other.pid_ = 0;
-    return *this;
-}
-
-ChildProcess ChildProcess::spawn(const ProcessSpec& spec, const ChildStdioMap& stdio)
-{
-    HANDLE stdin_h =
-        stdio.stdin_fd.has_value() ? handle_from_fd(*stdio.stdin_fd)
-                                   : ::GetStdHandle(STD_INPUT_HANDLE);
-
-    HANDLE stdout_h =
-        stdio.stdout_fd.has_value() ? handle_from_fd(*stdio.stdout_fd)
-                                    : ::GetStdHandle(STD_OUTPUT_HANDLE);
-
-    HANDLE stderr_h =
-        stdio.stderr_fd.has_value() ? handle_from_fd(*stdio.stderr_fd)
-                                    : ::GetStdHandle(STD_ERROR_HANDLE);
-
-    return spawn_with_handles(spec, stdin_h, stdout_h, stderr_h);
+    return spawn_with_handles(
+        spec, 
+        TO_NATIVE(stdin_h), 
+        TO_NATIVE(stdout_h), 
+        TO_NATIVE(stderr_h));
 }
 
 void ChildProcess::terminate(int /*signal_number*/)
@@ -378,6 +459,7 @@ std::optional<WaitResult> ChildProcess::wait_for(std::chrono::milliseconds timeo
     return decode_exit_code(code);
 }
 
+
 void ChildProcess::reap_if_dead() noexcept
 {
     if (!process_handle_) return;
@@ -391,12 +473,14 @@ void ChildProcess::reap_if_dead() noexcept
     }
 }
 
+
 PipedChild::~PipedChild()
 {
     close_fds();
 }
 
-PipedChild::PipedChild(PipedChild&& other) noexcept
+
+PipedChild::PipedChild(PipedChild &&other) noexcept
     : process_(std::move(other.process_)),
       parent_write_stdin_(other.parent_write_stdin_),
       parent_read_stdout_(other.parent_read_stdout_),
@@ -407,7 +491,8 @@ PipedChild::PipedChild(PipedChild&& other) noexcept
     other.parent_read_stderr_ = -1;
 }
 
-PipedChild& PipedChild::operator=(PipedChild&& other) noexcept
+
+PipedChild& PipedChild::operator=(PipedChild &&other) noexcept
 {
     if (this == &other) return *this;
 
@@ -440,6 +525,16 @@ PipedChild PipedChild::from_raw(
 }
 
 
+// ChildProcess ChildProcess::from_handle(void* process_handle, ProcessId pid) noexcept
+// {
+//     ChildProcess out;
+//     out.process_handle_ = process_handle;
+//     out.pid_ = pid;
+//     return out;
+// }
+//
+
+
 PipedChild PipedChild::spawn(const ProcessSpec &spec)
 {
     PipePair stdin_pipe = make_pipe();   // parent writes, child reads
@@ -452,15 +547,15 @@ PipedChild PipedChild::spawn(const ProcessSpec &spec)
         make_non_inheritable(stdout_pipe.read_end);
         make_non_inheritable(stderr_pipe.read_end);
 
-        ChildProcess child = spawn_with_handles(
+        ChildProcess child = ChildProcess::spawn_with_handles(
             spec,
-            stdin_pipe.read_end,
-            stdout_pipe.write_end,
-            stderr_pipe.write_end);
+            TO_NATIVE(stdin_pipe.read_end),
+            TO_NATIVE(stdout_pipe.write_end),
+            TO_NATIVE(stderr_pipe.write_end));
 
-        close_handle_if_open(stdin_pipe.read_end);
-        close_handle_if_open(stdout_pipe.write_end);
-        close_handle_if_open(stderr_pipe.write_end);
+        // close_handle_if_open(stdin_pipe.read_end);
+        // close_handle_if_open(stdout_pipe.write_end);
+        // close_handle_if_open(stderr_pipe.write_end);
 
         const int parent_stdin_fd =
             fd_from_handle(stdin_pipe.write_end, _O_BINARY | _O_WRONLY);
@@ -473,6 +568,10 @@ PipedChild PipedChild::spawn(const ProcessSpec &spec)
         const int parent_stderr_fd =
             fd_from_handle(stderr_pipe.read_end, _O_BINARY | _O_RDONLY);
         stderr_pipe.read_end = INVALID_HANDLE_VALUE;
+
+        close_handle_if_open(stdin_pipe.read_end);
+        close_handle_if_open(stdout_pipe.write_end);
+        close_handle_if_open(stderr_pipe.write_end);
 
         return from_raw(
             std::move(child),
@@ -497,11 +596,11 @@ PipedChild PipedChild::spawn_inherit_stderr(const ProcessSpec &spec)
         make_non_inheritable(stdin_pipe.write_end);
         make_non_inheritable(stdout_pipe.read_end);
 
-        ChildProcess child = spawn_with_handles(
+        ChildProcess child = ChildProcess::spawn_with_handles(
             spec,
-            stdin_pipe.read_end,
-            stdout_pipe.write_end,
-            ::GetStdHandle(STD_ERROR_HANDLE));
+            TO_NATIVE(stdin_pipe.read_end),
+            TO_NATIVE(stdout_pipe.write_end),
+            TO_NATIVE(::GetStdHandle(STD_ERROR_HANDLE)));
 
         close_handle_if_open(stdin_pipe.read_end);
         close_handle_if_open(stdout_pipe.write_end);

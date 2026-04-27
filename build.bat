@@ -3,7 +3,7 @@ setlocal
 
 :: -G Ninja forces it to act like Linux (Single-Config) and generates compile_commands.json
 :: -DCMAKE_BUILD_TYPE=Debug now works perfectly on Windows!
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=DEBUG
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 :: -j works flawlessly with Ninja to use all CPU cores

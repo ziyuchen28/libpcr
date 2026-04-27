@@ -2,12 +2,23 @@
 if(WIN32)
 
     # WIN
-    add_executable(test_proc_piped_win
-        tests/test_proc_piped_win.cpp
+
+    add_executable(test_proc_piped_echo_win
+        proc/test_proc_piped_echo_win.cpp
     )
-    target_link_libraries(test_proc_piped_win PRIVATE pcr::proc)
-    target_include_directories(test_proc_piped_win PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    add_test(NAME test_proc_piped_win COMMAND test_proc_piped_win)
+    target_link_libraries(test_proc_piped_echo_win PRIVATE pcr::proc)
+    target_include_directories(test_proc_piped_echo_win PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    add_test(NAME test_proc_piped_echo_win COMMAND test_proc_piped_echo_win)
+
+
+    add_executable(test_proc_piped_findstr_win
+        proc/test_proc_piped_findstr_win.cpp
+    )
+    target_link_libraries(test_proc_piped_findstr_win PRIVATE pcr::proc)
+    target_include_directories(test_proc_piped_findstr_win PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    add_test(NAME test_proc_piped_findstr_win COMMAND test_proc_piped_findstr_win)
+
+
     # WIN
 
 else()

@@ -26,9 +26,13 @@ struct WaitResult
 };
 
 
+typedef struct _NativeHandle* NativeHandle;
+
 class ChildProcess 
 {
+
 public:
+
     ChildProcess() = default;
     ~ChildProcess();
 
@@ -41,6 +45,12 @@ public:
     // to do: future support - spawn detached process 
     // hence prefer named constructor over constructor for overload extensibility 
     static ChildProcess spawn(const ProcessSpec &spec, const ChildStdioMap &stdio);
+    // wrapper over void to prevent user mistakes
+    static ChildProcess spawn_with_handles(
+        const ProcessSpec &spec,
+        NativeHandle stdin_h,
+        NativeHandle stdout_h,
+        NativeHandle stderr_h);
 
     ProcessId pid() const noexcept { 
         return pid_; 
@@ -51,11 +61,16 @@ public:
     WaitResult wait();
     std::optional<WaitResult> wait_for(std::chrono::milliseconds timeout);
 
+
 private:
+
     static ChildProcess from_pid(ProcessId pid) noexcept;
+#ifdef _WIN32
+#endif
     void reap_if_dead() noexcept;
 
-    ProcessId pid_ = -1;
+    // ProcessId pid_ = -1;
+    ProcessId pid_ = 0;
 #ifdef _WIN32
     void *process_handle_ = nullptr;
 #endif
