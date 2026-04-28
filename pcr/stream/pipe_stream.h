@@ -18,12 +18,10 @@ public:
     PipeReader(PipeReader &&other) noexcept;
     PipeReader &operator=(PipeReader &&other) noexcept;
     std::size_t read_some(void* dst, std::size_t max_bytes);
-    void close_read();
+    void close_read() noexcept;
     int fd() const noexcept { return fd_; }
     bool open() const noexcept { return open_; }
 private:
-    void do_close() noexcept;
-
     int fd_ = -1;
     bool owned_ = false;
     bool open_ = true;
@@ -43,14 +41,12 @@ public:
     PipeWriter &operator=(PipeWriter &&other) noexcept;
 
     std::size_t write_some(const void* src, std::size_t max_bytes);
-    void close_write();
+    void close_write() noexcept;
 
     int fd() const noexcept { return fd_; }
     bool open() const noexcept { return open_; }
 
 private:
-    void do_close() noexcept;
-
     int fd_ = -1;
     bool owned_ = false;
     bool open_ = true;
@@ -61,10 +57,11 @@ private:
 class PipeDuplex 
 {
 public:
-    PipeDuplex(int read_fd,
-               int write_fd,
-               FdOwnership read_ownership = FdOwnership::Owned,
-               FdOwnership write_ownership = FdOwnership::Owned);
+    PipeDuplex(
+        int read_fd,
+        int write_fd,
+        FdOwnership read_ownership = FdOwnership::Owned,
+        FdOwnership write_ownership = FdOwnership::Owned);
 
     PipeDuplex(PipeReader reader, PipeWriter writer) noexcept;
 

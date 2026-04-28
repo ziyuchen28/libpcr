@@ -15,7 +15,7 @@ namespace pcr::stream {
     throw std::runtime_error(std::string(prefix) + ": " + std::strerror(errno));
 }
 
-static void close_fd_if_open(int& fd) noexcept 
+static void close_fd_if_open(int &fd) noexcept 
 {
     if (fd >= 0) {
         ::close(fd);
@@ -23,10 +23,8 @@ static void close_fd_if_open(int& fd) noexcept
     }
 }
 
-//
-// reader
-//
 
+/* reader */
 PipeReader::PipeReader(int read_fd, FdOwnership ownership)
     : fd_(read_fd),
       owned_(ownership == FdOwnership::Owned) 
@@ -39,7 +37,7 @@ PipeReader::PipeReader(int read_fd, FdOwnership ownership)
 
 PipeReader::~PipeReader() noexcept 
 {
-    do_close();
+    close_read();
 }
 
 
@@ -58,7 +56,7 @@ PipeReader &PipeReader::operator=(PipeReader &&other) noexcept
 {
     if (this == &other) return *this;
 
-    do_close();
+    close_read();
 
     fd_ = other.fd_;
     owned_ = other.owned_;
@@ -91,7 +89,7 @@ std::size_t PipeReader::read_some(void *dst, std::size_t max_bytes)
 }
 
 
-void PipeReader::close_read() 
+void PipeReader::close_read() noexcept 
 {
     if (!open_) return;
     open_ = false;
@@ -101,20 +99,7 @@ void PipeReader::close_read()
 }
 
 
-void PipeReader::do_close() noexcept 
-{
-    if (owned_) {
-        close_fd_if_open(fd_);
-    } else {
-        fd_ = -1;
-    }
-    open_ = false;
-}
-
-
-// 
-// writer
-//
+/* writer */
 
 PipeWriter::PipeWriter(int write_fd, FdOwnership ownership)
     : fd_(write_fd),
@@ -128,7 +113,7 @@ PipeWriter::PipeWriter(int write_fd, FdOwnership ownership)
 
 PipeWriter::~PipeWriter() noexcept 
 {
-    do_close();
+    close_write();
 }
 
 
@@ -147,7 +132,7 @@ PipeWriter &PipeWriter::operator=(PipeWriter &&other) noexcept
 {
     if (this == &other) return *this;
 
-    do_close();
+    close_write();
 
     fd_ = other.fd_;
     owned_ = other.owned_;
@@ -183,7 +168,7 @@ std::size_t PipeWriter::write_some(const void *src, std::size_t max_bytes)
 }
 
 // to do
-void PipeWriter::close_write() 
+void PipeWriter::close_write() noexcept 
 {
     if (!open_) return;
     open_ = false;
@@ -192,19 +177,7 @@ void PipeWriter::close_write()
 }
 
 
-void PipeWriter::do_close() noexcept 
-{
-    if (owned_) {
-        close_fd_if_open(fd_);
-    } else {
-        fd_ = -1;
-    }
-    open_ = false;
-}
-
-//
-// duplex
-//
+/* duplex */
 PipeDuplex::PipeDuplex(
     int read_fd,
     int write_fd,
@@ -215,22 +188,26 @@ PipeDuplex::PipeDuplex(
 
 PipeDuplex::PipeDuplex(PipeReader reader, PipeWriter writer) noexcept
     : reader_(std::move(reader)),
-      writer_(std::move(writer)) {}
+      writer_(std::move(writer)) 
+{}
 
 std::size_t PipeDuplex::read_some(void *dst, std::size_t max_bytes) 
 {
     return reader_.read_some(dst, max_bytes);
 }
 
+
 std::size_t PipeDuplex::write_some(const void *src, std::size_t max_bytes) 
 {
     return writer_.write_some(src, max_bytes);
 }
 
+
 void PipeDuplex::close_read() 
 {
     reader_.close_read();
 }
+
 
 void PipeDuplex::close_write() 
 {
@@ -238,3 +215,6 @@ void PipeDuplex::close_write()
 }
 
 } // namespace pcr::stream
+
+
+

@@ -1,10 +1,14 @@
 
+
+# shared
+
+
 if(WIN32)
 
     # WIN
 
     add_executable(test_proc_piped_echo_win
-        proc/test_proc_piped_echo_win.cpp
+      proc/test_proc_piped_echo_win.cpp
     )
     target_link_libraries(test_proc_piped_echo_win PRIVATE pcr::proc)
     target_include_directories(test_proc_piped_echo_win PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -12,11 +16,18 @@ if(WIN32)
 
 
     add_executable(test_proc_piped_findstr_win
-        proc/test_proc_piped_findstr_win.cpp
+      proc/test_proc_piped_findstr_win.cpp
     )
     target_link_libraries(test_proc_piped_findstr_win PRIVATE pcr::proc)
     target_include_directories(test_proc_piped_findstr_win PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     add_test(NAME test_proc_piped_findstr_win COMMAND test_proc_piped_findstr_win)
+
+    add_executable(test_stream_pipe_win
+      stream/test_stream_pipe_win.cpp
+    )
+    target_link_libraries(test_stream_pipe_win PRIVATE pcr::stream pcr::proc)
+    target_include_directories(test_stream_pipe_win PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    add_test(NAME test_stream_pipe_win COMMAND test_stream_pipe_win)
 
 
     # WIN
