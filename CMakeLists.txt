@@ -22,9 +22,9 @@ endif()
 
 add_subdirectory(pcr/proc)
 add_subdirectory(pcr/stream)
+add_subdirectory(pcr/framing)
 
 if(NOT WIN32)
-add_subdirectory(pcr/framing)
 add_subdirectory(pcr/jsonrpc)
 add_subdirectory(pcr/ipc)
 endif()

@@ -106,3 +106,4 @@ int main()
     std::cout << "test_stream_pipe_win: ok\n";
     return 0;
 }
+

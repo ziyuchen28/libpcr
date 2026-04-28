@@ -10,6 +10,10 @@ target_include_directories(pcr_framing PUBLIC ${PCR_ROOT_DIR})
 
 target_compile_features(pcr_framing PUBLIC cxx_std_20)
 
-target_compile_options(pcr_framing PRIVATE -Wall -Wextra -Wpedantic)
+if(MSVC)
+  target_compile_options(pcr_stream PRIVATE /W4 /permissive-)
+else()
+  target_compile_options(pcr_stream PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 target_link_libraries(pcr_framing PUBLIC pcr::stream)

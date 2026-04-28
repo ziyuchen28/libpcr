@@ -22,19 +22,22 @@ namespace pcr::framing
 class ContentLengthFramer 
 {
 public:
-    explicit ContentLengthFramer(pcr::stream::AnyStream &io,
-                                 std::size_t max_header_bytes,
-                                 std::size_t max_body_bytes,
-                                 FrameStats *stats = nullptr);
+    explicit ContentLengthFramer(
+        pcr::stream::AnyStream &io,
+        std::size_t max_header_bytes,
+        std::size_t max_body_bytes,
+        FrameStats *stats = nullptr);
 
-    explicit ContentLengthFramer(pcr::stream::AnyStream &io,
-                                 FrameStats *stats = nullptr);
+    explicit ContentLengthFramer(
+        pcr::stream::AnyStream &io,
+        FrameStats *stats = nullptr);
 
     std::optional<std::string> read_frame();
     void write_frame(std::string_view payload);
 
-    void set_limits(std::size_t max_header_bytes, 
-                    std::size_t max_body_bytes) noexcept 
+    void set_limits(
+        std::size_t max_header_bytes, 
+        std::size_t max_body_bytes) noexcept 
     { 
         max_header_bytes_ = max_header_bytes; 
         max_body_bytes_ = max_body_bytes;

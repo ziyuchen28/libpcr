@@ -7,21 +7,40 @@
 #include <iostream>
 #include <stdexcept>
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#else
 #include <unistd.h>
+#endif
 
 namespace {
 
+inline void os_close(int fd) noexcept 
+{
+#ifdef _WIN32
+    ::_close(fd);
+#else
+    ::close(fd);
+#endif
+}
 
-// tiny RAII fd so tests don't leak on early exceptions
+
+// tiny RAII fd so tests don't leak on early exceptions during make pipes
 struct UniqueFd 
 {
     int fd = -1;
     UniqueFd() = default;
     explicit UniqueFd(int f) : fd(f) {}
-    ~UniqueFd() { if (fd >= 0) ::close(fd); }
+    ~UniqueFd() 
+    { 
+        if (fd >= 0) {
+            os_close(fd);
+        } 
+    }
 
     UniqueFd(const UniqueFd&) = delete;
-    UniqueFd& operator=(const UniqueFd&) = delete;
+    UniqueFd &operator=(const UniqueFd&) = delete;
 
     UniqueFd(UniqueFd &&o) noexcept : fd(o.fd) 
     { 
@@ -31,7 +50,9 @@ struct UniqueFd
     UniqueFd& operator=(UniqueFd &&o) noexcept 
     {
         if (this == &o) return *this;
-        if (fd >= 0) ::close(fd);
+        if (fd >= 0) {
+            os_close(fd);
+        }
         fd = o.fd;
         o.fd = -1;
         return *this;
@@ -105,3 +126,4 @@ int main()
     std::cout << "test_framing_content_length_pipes_two_frames: ok\n";
     return 0;
 }
+
