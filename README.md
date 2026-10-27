@@ -29,6 +29,42 @@ Windows:
 build.bat
 ```
 
+## How to use
+
+Launch a child process and communicate through its pipes (POSIX):
+
+```cpp
+#include "pcr/proc/piped_child.h"
+#include "pcr/proc/proc_spec.h"
+
+#include <iostream>
+#include <unistd.h>
+
+int main()
+{
+    pcr::proc::ProcessSpec spec;
+    spec.exe = "/bin/cat";
+
+    auto child = pcr::proc::PipedChild::spawn(spec);
+
+    constexpr char message[] = "hello\n";
+    if (::write(child.stdin_write_fd(), message, sizeof(message) - 1) !=
+        static_cast<ssize_t>(sizeof(message) - 1)) {
+        return 1;
+    }
+    child.close_stdin_write();
+
+    char buffer[128];
+    const ssize_t n = ::read(child.stdout_read_fd(), buffer, sizeof(buffer));
+    if (n > 0) {
+        std::cout.write(buffer, n);
+    }
+    child.wait();
+}
+```
+
+For framed JSON-RPC, use the `ipc` layer instead of handling raw pipe I/O.
+
 ## Use in CMake
 
 ```cmake
@@ -45,3 +81,4 @@ The stdio transport is one composition of the lower-level modules. Programs need
 **Currently:** Subprocess communication over stdio pipes, `Content-Length` message framing, and JSON-RPC.
 
 **Future extensions:** Unix-domain sockets, TCP (local or remote), other framing schemes, and additional RPC protocols
+
